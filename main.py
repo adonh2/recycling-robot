@@ -15,6 +15,9 @@ def get_color_ranges():
         "purple": [
             (np.array([125, 80, 70]), np.array([165, 255, 255])),
         ],
+        "green": [
+            (np.array([40, 120, 70]), np.array([80, 255, 255])),
+        ],
     }
 
 
@@ -41,6 +44,7 @@ outline_colors = {
     "red": (0, 0, 255),
     "blue": (255, 0, 0),
     "purple": (255, 0, 255),
+    "green": (0, 255, 0),
 }
 
 while True:
