@@ -1,7 +1,7 @@
 import cv2
 from ultralytics import YOLO
 
-model = YOLO(r"C:\Users\lonan\Desktop\Projects\recycling-robot\runs\detect\mbot2_detector3\weights\best.pt")
+model = YOLO(r"../runs/detect/mbot2_detector3/weights/best.pt")
 
 cap = cv2.VideoCapture(0)
 
