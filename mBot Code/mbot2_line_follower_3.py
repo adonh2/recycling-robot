@@ -21,11 +21,11 @@ BLACK      = 50
 # WAIT TO START -----------------------------------------
 cpi.console.println("Press A to start")
 while not cpi.controller.is_press('a'):
-    cpi.led.on(255, 0, 0)
+    cpi.led.on(0, 0, 0)
 while cpi.controller.is_press('a'):
     time.sleep(0.05)
 
-cpi.led.on(0, 255, 0)
+cpi.led.on(0, 0, 0)
 cpi.console.clear()
 cpi.console.println("Following...")
 
