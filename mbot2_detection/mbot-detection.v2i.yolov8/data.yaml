@@ -1,0 +1,13 @@
+train: ../train/images
+val: ../valid/images
+test: ../test/images
+
+nc: 1
+names: ['mbot-detection']
+
+roboflow:
+  workspace: adons-workspace-vnqbw
+  project: mbot-detection
+  version: 2
+  license: Private
+  url: https://app.roboflow.com/adons-workspace-vnqbw/mbot-detection/2
