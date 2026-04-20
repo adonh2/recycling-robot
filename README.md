@@ -2,7 +2,7 @@
 
 ## About
 
-The Recycling Robot is an autonomous sorting system built on the **mBot2** platform. Its goal is to identify recyclable items by material type and physically move each item to the correct designated zone — eliminating the need for manual sorting.
+The Recycling Robot is an autonomous sorting system built on the **mBot2** platform. Its goal is to identify recyclable items by material type and physically move each item to the correct designated zone eliminating the need for manual sorting.
 
 A **webcam** mounted at the sorting station inspects each item placed on the detection area. Using computer vision, the system analyses the colour and appearance of the item to classify its material (e.g. plastic, paper, metal). Once a material is identified, the classification is sent to the mBot2, which follows a **colour-coded line track** to navigate to the matching recycling bin zone and deposits the item there.
 
