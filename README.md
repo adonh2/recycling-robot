@@ -1,5 +1,31 @@
 # Recycling Robot
 
+## About
+
+The Recycling Robot is an autonomous sorting system built on the **mBot2** platform. Its goal is to identify recyclable items by material type and physically move each item to the correct designated zone — eliminating the need for manual sorting.
+
+A **webcam** mounted at the sorting station inspects each item placed on the detection area. Using computer vision, the system analyses the colour and appearance of the item to classify its material (e.g. plastic, paper, metal). Once a material is identified, the classification is sent to the mBot2, which follows a **colour-coded line track** to navigate to the matching recycling bin zone and deposits the item there.
+
+### How It Works
+
+1. **Detection** — A coloured cube (representing a recyclable item) is placed inside a yellow A4 marker sheet in view of the webcam.
+2. **Classification** — The host PC script detects the yellow boundary, isolates the item inside, and classifies its colour/material using HSV colour analysis. A YOLOv8 model provides an additional layer of object recognition.
+3. **Decision** — The detected material type is mapped to a target drop-off zone on the track.
+4. **Navigation** — The mBot2 follows the black line track, reading colour markers at junctions to determine when to turn or stop at the correct zone.
+5. **Sorting** — The robot deposits the item in the appropriate recycling area and returns to the start for the next item.
+
+### Material Categories
+
+| Cube Colour | Recycling Category |
+|-------------|-------------------|
+| Blue | Plastic |
+| Green | Glass |
+| Red | Metal / Aluminium |
+| Purple | Paper / Cardboard |
+| Yellow | General Waste |
+
+---
+
 An mBot2-based robot system that follows a line track and detects coloured cubes using computer vision. The project combines on-robot firmware (MicroPython via CyberPi) with off-robot Python scripts running on a host PC.
 
 ---
