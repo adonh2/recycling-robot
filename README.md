@@ -8,11 +8,11 @@ A **webcam** mounted at the sorting station inspects each item placed on the det
 
 ### How It Works
 
-1. **Detection** — A coloured cube (representing a recyclable item) is placed inside a yellow A4 marker sheet in view of the webcam.
-2. **Classification** — The host PC script detects the yellow boundary, isolates the item inside, and classifies its colour/material using HSV colour analysis. A YOLOv8 model provides an additional layer of object recognition.
-3. **Decision** — The detected material type is mapped to a target drop-off zone on the track.
-4. **Navigation** — The mBot2 follows the black line track, reading colour markers at junctions to determine when to turn or stop at the correct zone.
-5. **Sorting** — The robot deposits the item in the appropriate recycling area and returns to the start for the next item.
+1. **Detection** - A coloured cube (representing a recyclable item) is placed inside a yellow A4 marker sheet in view of the webcam.
+2. **Classification** - The host PC script detects the yellow boundary, isolates the item inside, and classifies its colour/material using HSV colour analysis. A YOLOv8 model provides an additional layer of object recognition.
+3. **Decision** - The detected material type is mapped to a target drop-off zone on the track.
+4. **Navigation** - The mBot2 follows the black line track, reading colour markers at junctions to determine when to turn or stop at the correct zone.
+5. **Sorting** - The robot deposits the item in the appropriate recycling area and returns to the start for the next item.
 
 ### Material Categories
 
@@ -22,7 +22,7 @@ A **webcam** mounted at the sorting station inspects each item placed on the det
 | Green | Glass |
 | Red | Metal / Aluminium |
 | Purple | Paper / Cardboard |
-| Yellow | General Waste |
+| Yellow | All/Pick Up Location |
 
 ---
 
