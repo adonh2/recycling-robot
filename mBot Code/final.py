@@ -11,12 +11,17 @@ import time
 # 2. Turn:  red or green → 90° anticlockwise
 #           blue or purple → 90° clockwise
 # 3. Drive forward until any sensor detects black
-# 4. Follow branch until input colour detected
+# 4. Follow branch until input colour detected (DROP)
+# 5a. Reverse: wait for all sensors to see white,
+#     then wait until any sensor detects black,
+#     then drive forward for 1 second
+# 5b. Turn 90° opposite of phase 2
+# 5c. Reverse straight until yellow detected (HOME)
 # -------------------------------------------------------
 
 input = "red"
 
-SPEED      = 30
+SPEED      = 22
 TURN_SPEED = 30
 
 green  = (0, 255, 0)
@@ -53,20 +58,62 @@ def any_sensor_black():
     return False
 
 def follow_step():
-    """One step of line following. Returns L1 and R1 colour names."""
+    """One step of line following. L2/R2 = outer alignment guards,
+    L1/R1 = fine steering. Returns L1 and R1 colour names."""
+    l2_color = cpi.quad_rgb_sensor.get_color_sta('l2', index=1)
     l1_color = cpi.quad_rgb_sensor.get_color_sta('l1', index=1)
     r1_color = cpi.quad_rgb_sensor.get_color_sta('r1', index=1)
-    L1 = l1_color != "white"
-    R1 = r1_color != "white"
+    r2_color = cpi.quad_rgb_sensor.get_color_sta('r2', index=1)
 
-    if L1 and R1:
+    L2 = l2_color == "black"
+    L1 = l1_color == "black"
+    R1 = r1_color == "black"
+    R2 = r2_color == "black"
+
+    # Outer guards: big drift, moderate correction (not a full pivot)
+    if L2 and not R2:
+        # Far-left sees line - robot drifted right, steer left
+        cpi.mbot2.drive_power(SPEED // 4, -SPEED)
+    elif R2 and not L2:
+        # Far-right sees line - robot drifted left, steer right
+        cpi.mbot2.drive_power(SPEED, -SPEED // 4)
+    # Inner sensors: gentle steering
+    elif L1 and R1:
         cpi.mbot2.drive_power(SPEED, -SPEED)
     elif L1:
-        cpi.mbot2.drive_power(SPEED // 4, -SPEED)
+        cpi.mbot2.drive_power(SPEED // 2, -SPEED)
     elif R1:
-        cpi.mbot2.drive_power(SPEED, -SPEED // 4)
+        cpi.mbot2.drive_power(SPEED, -SPEED // 2)
     else:
         cpi.mbot2.drive_power(SPEED // 2, -SPEED // 2)
+
+    return l1_color, r1_color
+
+def follow_step_reverse():
+    """Same as follow_step but drives in reverse. Returns L1 and R1 colours."""
+    l2_color = cpi.quad_rgb_sensor.get_color_sta('l2', index=1)
+    l1_color = cpi.quad_rgb_sensor.get_color_sta('l1', index=1)
+    r1_color = cpi.quad_rgb_sensor.get_color_sta('r1', index=1)
+    r2_color = cpi.quad_rgb_sensor.get_color_sta('r2', index=1)
+
+    L2 = l2_color == "black"
+    L1 = l1_color == "black"
+    R1 = r1_color == "black"
+    R2 = r2_color == "black"
+
+    # Inverted versions of forward corrections
+    if L2 and not R2:
+        cpi.mbot2.drive_power(-SPEED // 4, SPEED)
+    elif R2 and not L2:
+        cpi.mbot2.drive_power(-SPEED, SPEED // 4)
+    elif L1 and R1:
+        cpi.mbot2.drive_power(-SPEED, SPEED)
+    elif L1:
+        cpi.mbot2.drive_power(-SPEED // 2, SPEED)
+    elif R1:
+        cpi.mbot2.drive_power(-SPEED, SPEED // 2)
+    else:
+        cpi.mbot2.drive_power(-SPEED // 2, SPEED // 2)
 
     return l1_color, r1_color
 
@@ -84,6 +131,24 @@ while True:
     led(off)
 
     restart = False
+
+    # STARTUP: Drive forward until clear of starting yellow zone
+    cpi.console.clear()
+    cpi.console.println("Leaving start...")
+    while True:
+        if b_pressed():
+            restart = True
+            break
+        cpi.mbot2.drive_power(SPEED, -SPEED)
+        yellow_seen = any(
+            cpi.quad_rgb_sensor.get_color_sta(p, index=1) == "yellow"
+            for p in ('l2', 'l1', 'r1', 'r2')
+        )
+        if not yellow_seen:
+            cpi.mbot2.EM_stop(port="all")
+            break
+        time.sleep(0.02)
+    if restart: continue
 
     # PHASE 1: Follow until input colour ----------------
     cpi.console.clear()
@@ -131,20 +196,105 @@ while True:
     cpi.console.println("Following branch")
     while True:
         if b_pressed():
-            restart = True
+            restart = True 
             break
         l1_color, r1_color = follow_step()
         if l1_color == input or r1_color == input:
             cpi.mbot2.EM_stop(port="all")
             led(color_to_rgb(input))
             cpi.console.clear()
-            cpi.console.println("Arrived!")
-            cpi.console.println("Press B to reset")
+            cpi.console.println("Dropped off")
+            time.sleep(1)
             break
         time.sleep(0.02)
     if restart: continue
 
-    # WAIT FOR B AFTER ARRIVAL --------------------------
+    # PHASE 5: Reverse tracking the lane ----------------
+    cpi.console.clear()
+    cpi.console.println("Reversing...")
+    led(off)
+
+    # 5.1: reverse following the black line until all sensors white
+    while True:
+        if b_pressed():
+            restart = True
+            break
+        follow_step_reverse()
+        all_white = all(
+            cpi.quad_rgb_sensor.get_color_sta(p, index=1) == "white"
+            for p in ('l2', 'l1', 'r1', 'r2')
+        )
+        if all_white:
+            cpi.mbot2.EM_stop(port="all")
+            break
+        time.sleep(0.02)
+    if restart: continue
+
+    # 5.2: Turn 90° opposite of phase 2
+    cpi.console.clear()
+    cpi.console.println("Turning")
+    if input in ("red", "green"):
+        cpi.mbot2.turn(90, speed=TURN_SPEED)
+    elif input in ("blue", "purple"):
+        cpi.mbot2.turn(-90, speed=TURN_SPEED)
+    if b_pressed():
+        continue
+
+    # 5.3: Drive forward following line until yellow detected
+    cpi.console.clear()
+    cpi.console.println("Going to yellow")
+    while True:
+        if b_pressed():
+            restart = True
+            break
+        l1_color, r1_color = follow_step()
+        if l1_color == "yellow" or r1_color == "yellow":
+            cpi.mbot2.EM_stop(port="all")
+            break
+        all_white = all(
+            cpi.quad_rgb_sensor.get_color_sta(p, index=1) == "white"
+            for p in ('l2', 'l1', 'r1', 'r2')
+        )
+        if all_white:
+            cpi.mbot2.EM_stop(port="all")
+            cpi.mbot2.turn(180, speed=TURN_SPEED)
+        time.sleep(0.02)
+    if restart: continue
+    led(yellow)
+    cpi.mbot2.turn(180, speed=TURN_SPEED)
+
+    # Reverse until yellow detected
+    while True:
+        if b_pressed():
+            restart = True
+            break
+        cpi.mbot2.drive_power(-SPEED, SPEED)
+        l1_color = cpi.quad_rgb_sensor.get_color_sta('l1', index=1)
+        r1_color = cpi.quad_rgb_sensor.get_color_sta('r1', index=1)
+        if l1_color == "yellow" or r1_color == "yellow":
+            cpi.mbot2.EM_stop(port="all")
+            break
+        time.sleep(0.02)
+    if restart: continue
+    time.sleep(0.5)
+
+    # Reverse until black detected
+    while True:
+        if b_pressed():
+            restart = True
+            break
+        cpi.mbot2.drive_power(-SPEED, SPEED)
+        if any_sensor_black():
+            cpi.mbot2.EM_stop(port="all")
+            break
+        time.sleep(0.02)
+    if restart: continue
+
+    cpi.console.clear()
+    cpi.console.println("HOME!")
+    cpi.console.println("Press B to reset")
+
+    # WAIT FOR B AFTER HOME -----------------------------
     while not cpi.controller.is_press('b'):
         time.sleep(0.05)
     while cpi.controller.is_press('b'):
