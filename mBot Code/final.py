@@ -21,8 +21,9 @@ import time
 
 input = "red"
 
-SPEED      = 22
-TURN_SPEED = 30
+SPEED       = 22
+TURN_SPEED  = 30
+DETECT_DIST = 10
 
 green  = (0, 255, 0)
 red    = (255, 0, 0)
@@ -130,32 +131,35 @@ while True:
     # WAIT TO START -------------------------------------
     cpi.console.clear()
     cpi.console.println("Target: " + input)
-    cpi.console.println("Press A to start")
-    while not cpi.controller.is_press('a'):
+    cpi.console.println("A or place item")
+    while True:
         led(color_to_rgb(input))
+        dist = cpi.ultrasonic2.get(index=1)
+        if cpi.controller.is_press('a') or (dist > 0 and dist < DETECT_DIST):
+            break
         if cpi.controller.is_press('up'):
             input = "red"
             cpi.console.clear()
             cpi.console.println("Target: " + input)
-            cpi.console.println("Press A to start")
+            cpi.console.println("A or place item")
             time.sleep(0.2)
         elif cpi.controller.is_press('right'):
             input = "blue"
             cpi.console.clear()
             cpi.console.println("Target: " + input)
-            cpi.console.println("Press A to start")
+            cpi.console.println("A or place item")
             time.sleep(0.2)
         elif cpi.controller.is_press('down'):
             input = "green"
             cpi.console.clear()
             cpi.console.println("Target: " + input)
-            cpi.console.println("Press A to start")
+            cpi.console.println("A or place item")
             time.sleep(0.2)
         elif cpi.controller.is_press('left'):
             input = "purple"
             cpi.console.clear()
             cpi.console.println("Target: " + input)
-            cpi.console.println("Press A to start")
+            cpi.console.println("A or place item")
             time.sleep(0.2)
     while cpi.controller.is_press('a'):
         time.sleep(0.05)
