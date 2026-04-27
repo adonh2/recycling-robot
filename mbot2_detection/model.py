@@ -1,12 +1,11 @@
 from ultralytics import YOLO
 
-# Start from a pre-trained base (transfer learning)
-model = YOLO("yolov8n.pt")  # 'n' = nano, fastest; try 'm' for more accuracy
+model = YOLO("yolov8n.pt")  # Start fresh from base model
 
 model.train(
-    data="C:\\Users\\lonan\\Desktop\\Projects\\recycling-robot\\mbot2_detection\\mbot-detection.v2i.yolov8\\data.yaml",  # From Roboflow export
+    data=r"C:\Users\adonh\OneDrive\Desktop\green cube detection.v1i.yolov8\data.yaml",  # Update this path to your new export
     epochs=50,
     imgsz=640,
     batch=16,
-    name="mbot2_detector"
+    name="green_cube"  # New name so it doesn't overwrite your mBot2 model
 )

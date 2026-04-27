@@ -1,7 +1,7 @@
 task: detect
 mode: train
 model: yolov8n.pt
-data: C:\Users\lonan\Desktop\Projects\recycling-robot\mbot2_detection\mbot-detection.v1i.yolov8\data.yaml
+data: C:\Users\adonh\OneDrive\Desktop\green cube detection.v1i.yolov8\data.yaml
 epochs: 50
 time: null
 patience: 100
@@ -13,7 +13,7 @@ cache: false
 device: cpu
 workers: 8
 project: null
-name: mbot2_detector
+name: green_cube
 exist_ok: false
 pretrained: true
 optimizer: auto
@@ -80,6 +80,7 @@ warmup_momentum: 0.8
 warmup_bias_lr: 0.1
 box: 7.5
 cls: 0.5
+cls_pw: 0.0
 dfl: 1.5
 pose: 12.0
 kobj: 1.0
@@ -106,4 +107,4 @@ auto_augment: randaugment
 erasing: 0.4
 cfg: null
 tracker: botsort.yaml
-save_dir: C:\Users\lonan\Desktop\Projects\recycling-robot\runs\detect\mbot2_detector
+save_dir: C:\Users\adonh\OneDrive\Desktop\Projects\recycling-robot\runs\detect\green_cube

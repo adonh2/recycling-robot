@@ -57,18 +57,25 @@ def any_sensor_black():
             return True
     return False
 
-def follow_step():
+def follow_step(any_color=False):
     """One step of line following. L2/R2 = outer alignment guards,
-    L1/R1 = fine steering. Returns L1 and R1 colour names."""
+    L1/R1 = fine steering. Returns L1 and R1 colour names.
+    any_color=True treats all non-white, non-yellow as line."""
     l2_color = cpi.quad_rgb_sensor.get_color_sta('l2', index=1)
     l1_color = cpi.quad_rgb_sensor.get_color_sta('l1', index=1)
     r1_color = cpi.quad_rgb_sensor.get_color_sta('r1', index=1)
     r2_color = cpi.quad_rgb_sensor.get_color_sta('r2', index=1)
 
-    L2 = l2_color == "black"
-    L1 = l1_color == "black"
-    R1 = r1_color == "black"
-    R2 = r2_color == "black"
+    if any_color:
+        L2 = l2_color not in ("white", "yellow")
+        L1 = l1_color not in ("white", "yellow")
+        R1 = r1_color not in ("white", "yellow")
+        R2 = r2_color not in ("white", "yellow")
+    else:
+        L2 = l2_color == "black"
+        L1 = l1_color == "black"
+        R1 = r1_color == "black"
+        R2 = r2_color == "black"
 
     # Outer guards: big drift, moderate correction (not a full pivot)
     if L2 and not R2:
@@ -125,7 +132,31 @@ while True:
     cpi.console.println("Target: " + input)
     cpi.console.println("Press A to start")
     while not cpi.controller.is_press('a'):
-        led(red)
+        led(color_to_rgb(input))
+        if cpi.controller.is_press('up'):
+            input = "red"
+            cpi.console.clear()
+            cpi.console.println("Target: " + input)
+            cpi.console.println("Press A to start")
+            time.sleep(0.2)
+        elif cpi.controller.is_press('right'):
+            input = "blue"
+            cpi.console.clear()
+            cpi.console.println("Target: " + input)
+            cpi.console.println("Press A to start")
+            time.sleep(0.2)
+        elif cpi.controller.is_press('down'):
+            input = "green"
+            cpi.console.clear()
+            cpi.console.println("Target: " + input)
+            cpi.console.println("Press A to start")
+            time.sleep(0.2)
+        elif cpi.controller.is_press('left'):
+            input = "purple"
+            cpi.console.clear()
+            cpi.console.println("Target: " + input)
+            cpi.console.println("Press A to start")
+            time.sleep(0.2)
     while cpi.controller.is_press('a'):
         time.sleep(0.05)
     led(off)
@@ -247,7 +278,7 @@ while True:
         if b_pressed():
             restart = True
             break
-        l1_color, r1_color = follow_step()
+        l1_color, r1_color = follow_step(any_color=True)
         if l1_color == "yellow" or r1_color == "yellow":
             cpi.mbot2.EM_stop(port="all")
             break
@@ -290,13 +321,4 @@ while True:
         time.sleep(0.02)
     if restart: continue
 
-    cpi.console.clear()
-    cpi.console.println("HOME!")
-    cpi.console.println("Press B to reset")
-
-    # WAIT FOR B AFTER HOME -----------------------------
-    while not cpi.controller.is_press('b'):
-        time.sleep(0.05)
-    while cpi.controller.is_press('b'):
-        time.sleep(0.05)
     led(off)
