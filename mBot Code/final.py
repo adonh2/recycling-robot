@@ -278,10 +278,24 @@ while True:
     # 5.3: Drive forward following line until yellow detected
     cpi.console.clear()
     cpi.console.println("Going to yellow")
+    uturn_count = 0
     while True:
         if b_pressed():
             restart = True
             break
+        dist = cpi.ultrasonic2.get(index=1)
+        if 0 < dist < DETECT_DIST:
+            cpi.mbot2.EM_stop(port="all")
+            while True:
+                if b_pressed():
+                    restart = True
+                    break
+                dist = cpi.ultrasonic2.get(index=1)
+                if dist == 0 or dist >= DETECT_DIST:
+                    break
+                cpi.audio.play("beeps")
+                time.sleep(0.3)
+            if restart: break
         l1_color, r1_color = follow_step(any_color=True)
         if l1_color == "yellow" or r1_color == "yellow":
             cpi.mbot2.EM_stop(port="all")
@@ -292,6 +306,15 @@ while True:
         )
         if all_white:
             cpi.mbot2.EM_stop(port="all")
+            uturn_count += 1
+            if uturn_count > 2:
+                cpi.console.clear()
+                cpi.console.println("Lost! Press B")
+                while not b_pressed():
+                    cpi.audio.play("beeps")
+                    time.sleep(0.3)
+                restart = True
+                break
             cpi.mbot2.turn(180, speed=TURN_SPEED)
         time.sleep(0.02)
     if restart: continue

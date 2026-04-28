@@ -2,6 +2,7 @@ import cv2
 from ultralytics import YOLO
 
 model = YOLO(r"../runs/detect/mbot2_detector3/weights/best.pt")
+model = YOLO(r"../runs/detect/green_cube/weights/best.pt")
 
 cap = cv2.VideoCapture(0)
 
