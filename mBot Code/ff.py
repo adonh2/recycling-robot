@@ -1,6 +1,19 @@
 import cyberpi as cpi
 import time
 
+# --- Webcam bridge config ---
+WIFI_SSID = "geezer"
+WIFI_PASS = "gegezer123"
+DETECT_URL = ""   # <-- IP of the PC running detect.py
+
+cpi.wifi.connect(WIFI_SSID, WIFI_PASS)
+cpi.console.println("Connecting WiFi...")
+for _ in range(40):
+    if cpi.wifi.is_connect():
+        break
+    time.sleep(0.25)
+cpi.console.clear()
+
 # -------------------------------------------------------
 # mBot2 - Recycling Robot
 #
@@ -57,6 +70,20 @@ def any_sensor_black():
         if cpi.quad_rgb_sensor.get_color_sta(probe, index=1) == "black":
             return True
     return False
+
+def fetch_detected_color():
+    """Poll detect.py server. Returns 'red'/'blue'/'green'/'purple' or None."""
+    try:
+        # API name may vary slightly between cyberpi versions:
+        # try cpi.cloud.web_request_get / cpi.cloud.web_request("GET", ...) if this fails
+        resp = cpi.cloud.web_request_get(DETECT_URL)
+        if resp:
+            resp = resp.strip().lower()
+            if resp in ("red", "blue", "green", "purple"):
+                return resp
+    except:
+        pass
+    return None
 
 def follow_step(any_color=False):
     """One step of line following. L2/R2 = outer alignment guards,
@@ -131,39 +158,53 @@ while True:
     # WAIT TO START -------------------------------------
     cpi.console.clear()
     cpi.console.println("Target: " + input)
-    cpi.console.println("A or place item")
+    cpi.console.println("A / item / webcam")
+    poll_counter = 0
     while True:
         led(color_to_rgb(input))
         dist = cpi.ultrasonic2.get(index=1)
+
+        # Manual start (button or item placed in front)
         if cpi.controller.is_press('a') or (dist > 0 and dist < DETECT_DIST):
             break
+
+        # Auto start from webcam (poll every ~0.5 s to stay responsive)
+        poll_counter += 1
+        if poll_counter >= 5:
+            poll_counter = 0
+            detected = fetch_detected_color()
+            if detected:
+                input = detected
+                cpi.console.clear()
+                cpi.console.println("Webcam: " + input)
+                cpi.console.println("Auto-starting...")
+                time.sleep(1)
+                break
+
+        # Manual D-pad override (unchanged)
         if cpi.controller.is_press('up'):
             input = "red"
-            cpi.console.clear()
-            cpi.console.println("Target: " + input)
-            cpi.console.println("A or place item")
-            time.sleep(0.2)
+            cpi.console.clear(); cpi.console.println("Target: " + input)
+            cpi.console.println("A / item / webcam"); time.sleep(0.2)
         elif cpi.controller.is_press('right'):
             input = "blue"
-            cpi.console.clear()
-            cpi.console.println("Target: " + input)
-            cpi.console.println("A or place item")
-            time.sleep(0.2)
+            cpi.console.clear(); cpi.console.println("Target: " + input)
+            cpi.console.println("A / item / webcam"); time.sleep(0.2)
         elif cpi.controller.is_press('down'):
             input = "green"
-            cpi.console.clear()
-            cpi.console.println("Target: " + input)
-            cpi.console.println("A or place item")
-            time.sleep(0.2)
+            cpi.console.clear(); cpi.console.println("Target: " + input)
+            cpi.console.println("A / item / webcam"); time.sleep(0.2)
         elif cpi.controller.is_press('left'):
             input = "purple"
-            cpi.console.clear()
-            cpi.console.println("Target: " + input)
-            cpi.console.println("A or place item")
-            time.sleep(0.2)
+            cpi.console.clear(); cpi.console.println("Target: " + input)
+            cpi.console.println("A / item / webcam"); time.sleep(0.2)
+
+        time.sleep(0.1)
     while cpi.controller.is_press('a'):
         time.sleep(0.05)
     led(off)
+
+    restart = False
 
     restart = False
 
