@@ -1,0 +1,1 @@
+Technology is most powerful when complexity is hidden behind simplicity. Good software is not just about writing code that works — it is about designing systems that are efficient, scalable, secure, and understandable.
